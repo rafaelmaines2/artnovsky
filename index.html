@@ -107,7 +107,7 @@
             <div class="hidden md:flex space-x-8 items-center bg-[#F2EDDA]/90 px-6 py-2 rounded-full backdrop-blur-md shadow-sm border border-brand-dark/5 mr-4 md:mr-10">
                 <a href="#sobre" class="text-brand-dark/90 font-bold hover:text-brand-green transition-colors text-xs uppercase tracking-[0.15em]">Sobre</a>
                 <a href="#produtos" class="text-brand-dark/90 font-bold hover:text-brand-green transition-colors text-xs uppercase tracking-[0.15em]">Loja</a>
-                <a href="#conteudo" class="text-brand-dark/90 font-bold hover:text-brand-green transition-colors text-xs uppercase tracking-[0.15em]">Conteúdo</a>
+                <a href="#conteudo" x-show="tips.length > 0" class="text-brand-dark/90 font-bold hover:text-brand-green transition-colors text-xs uppercase tracking-[0.15em]">Dicas</a>
                 <a href="#contato" class="text-brand-dark/90 font-bold hover:text-brand-green transition-colors text-xs uppercase tracking-[0.15em]">Contato</a>
             </div>
 
@@ -125,7 +125,7 @@
             <div class="px-4 pt-2 pb-6 space-y-2 relative z-10">
                 <a @click="mobileMenuOpen = false" href="#sobre" class="block px-3 py-3 text-brand-dark font-bold hover:bg-white/50 text-sm uppercase tracking-widest text-center">Sobre a Marca</a>
                 <a @click="mobileMenuOpen = false" href="#produtos" class="block px-3 py-3 text-brand-dark font-bold hover:bg-white/50 text-sm uppercase tracking-widest text-center">Nossos Produtos</a>
-                <a @click="mobileMenuOpen = false" href="#conteudo" class="block px-3 py-3 text-brand-dark font-bold hover:bg-white/50 text-sm uppercase tracking-widest text-center">Conteúdo</a>
+                <a @click="mobileMenuOpen = false" x-show="tips.length > 0" href="#conteudo" class="block px-3 py-3 text-brand-dark font-bold hover:bg-white/50 text-sm uppercase tracking-widest text-center">Dicas Naturais</a>
                 <a @click="mobileMenuOpen = false" href="#contato" class="block px-3 py-3 text-brand-dark font-bold hover:bg-white/50 text-sm uppercase tracking-widest text-center">Contato</a>
             </div>
         </div>
@@ -330,43 +330,33 @@
     </section>
 
     <!-- Blog / Conteúdo -->
-    <section id="conteudo" class="py-24 bg-white">
+    <section id="conteudo" x-show="tips.length > 0" class="py-24 bg-white" style="display: none;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-end mb-12 border-b border-brand-dark/10 pb-6">
                 <div>
                     <h2 class="text-4xl font-serif text-brand-dark">Dicas Naturais</h2>
-                    <p class="text-brand-dark/60 mt-2">Conhecimento e bem-estar para a sua rotina.</p>
+                    <p class="text-brand-dark/60 mt-2">Conhecimento, estudos e bem-estar para a sua rotina.</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Post 1 -->
-                <div class="group cursor-pointer">
-                    <div class="overflow-hidden rounded-xl h-64 mb-6 shadow-sm">
-                        <img src="hero.jpg" alt="Lavanda" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                    </div>
-                    <span class="text-brand-lavender text-xs uppercase tracking-[0.15em] font-bold">Aromaterapia</span>
-                    <h3 class="font-serif text-2xl text-brand-dark mt-2 mb-3 group-hover:text-brand-green transition-colors">O Poder Calmante da Lavanda</h3>
-                    <p class="text-brand-dark/70 text-sm leading-relaxed">Descubra como o hidrolato de lavanda pode transformar seu ritual de autocuidado em um momento relaxante antes de dormir.</p>
-                </div>
-                <!-- Post 2 -->
-                <div class="group cursor-pointer">
-                    <div class="overflow-hidden rounded-xl h-64 mb-6 shadow-sm">
-                        <img src="https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=600&q=80" alt="Ingredientes" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                    </div>
-                    <span class="text-brand-lavender text-xs uppercase tracking-[0.15em] font-bold">Saúde da Pele</span>
-                    <h3 class="font-serif text-2xl text-brand-dark mt-2 mb-3 group-hover:text-brand-green transition-colors">Cosméticos Industriais vs Naturais</h3>
-                    <p class="text-brand-dark/70 text-sm leading-relaxed">Por que abandonar ingredientes sintéticos e abraçar a nutrição profunda que apenas os óleos vegetais oferecem.</p>
-                </div>
-                <!-- Post 3 -->
-                <div class="group cursor-pointer">
-                    <div class="overflow-hidden rounded-xl h-64 mb-6 shadow-sm">
-                        <img src="https://images.unsplash.com/photo-1611079830811-865ff4428d17?auto=format&fit=crop&w=600&q=80" alt="Skincare" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                    </div>
-                    <span class="text-brand-lavender text-xs uppercase tracking-[0.15em] font-bold">Rotina</span>
-                    <h3 class="font-serif text-2xl text-brand-dark mt-2 mb-3 group-hover:text-brand-green transition-colors">Rotina Essencial: Como Começar</h3>
-                    <p class="text-brand-dark/70 text-sm leading-relaxed">Os passos simples para inserir o Sérum Rejuvenescedor e o Desodorante Natural no seu dia a dia.</p>
-                </div>
+                <template x-for="tip in tips" :key="tip.id">
+                    <a :href="tip.link || '#'" target="_blank" rel="noopener noreferrer" class="group cursor-pointer block">
+                        <div class="overflow-hidden rounded-xl h-64 mb-6 shadow-sm bg-brand-bg relative">
+                            <img :src="tip.image || 'hero.jpg'" :alt="tip.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4 text-brand-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            </div>
+                        </div>
+                        <span class="text-brand-lavender text-xs uppercase tracking-[0.15em] font-bold" x-text="tip.category"></span>
+                        <h3 class="font-serif text-2xl text-brand-dark mt-2 mb-3 group-hover:text-brand-green transition-colors" x-text="tip.title"></h3>
+                        <p class="text-brand-dark/70 text-sm leading-relaxed" x-text="tip.description"></p>
+                        <span x-show="tip.link" class="inline-flex items-center text-xs font-bold text-brand-green mt-3 uppercase tracking-wider group-hover:underline">
+                            Ler matéria / estudo
+                            <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </span>
+                    </a>
+                </template>
             </div>
         </div>
     </section>
@@ -589,6 +579,7 @@
                 modalOpen: false,
                 activeProduct: null,
                 products: [],
+                tips: [],
                 loading: true,
 
                 // Cart State
@@ -597,6 +588,7 @@
                 quantityToAdd: 1,
                 
                 async init() {
+                    // Carregar Produtos do Catálogo
                     try {
                         const snapshot = await db.collection('catalogo').get();
                         const fetchedProducts = [];
@@ -610,11 +602,29 @@
                             });
                         });
                         this.products = fetchedProducts;
-                        this.loading = false;
                     } catch (error) {
                         console.error("Erro ao carregar produtos do Firebase:", error);
-                        this.loading = false;
                     }
+
+                    // Carregar Dicas Naturais do Firestore
+                    try {
+                        let tipsSnap;
+                        try {
+                            tipsSnap = await db.collection('dicas').orderBy('createdAt', 'desc').get();
+                        } catch(err) {
+                            tipsSnap = await db.collection('dicas').get();
+                        }
+                        const fetchedTips = [];
+                        tipsSnap.forEach(doc => {
+                            fetchedTips.push({ id: doc.id, ...doc.data() });
+                        });
+                        this.tips = fetchedTips;
+                    } catch (err) {
+                        console.error("Erro ao carregar dicas do Firebase:", err);
+                        this.tips = [];
+                    }
+
+                    this.loading = false;
                 },
 
                 openModal(product) {

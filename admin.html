@@ -104,8 +104,26 @@
         <!-- Dashboard do Administrador -->
         <div x-show="user" style="display: none;">
             
-            <!-- Listagem de Produtos -->
-            <div x-show="view === 'list'" x-transition>
+            <!-- Tabs de Navegação -->
+            <div class="flex space-x-2 border-b border-brand-dark/10 mb-8">
+                <button @click="activeTab = 'products'" 
+                        :class="activeTab === 'products' ? 'border-b-2 border-brand-green text-brand-dark font-bold bg-white' : 'text-brand-dark/50 hover:text-brand-dark bg-transparent'"
+                        class="px-6 py-3 text-xs md:text-sm uppercase tracking-widest transition-all flex items-center rounded-t-xl">
+                    <span class="mr-2">🌿</span> Catálogo de Produtos
+                    <span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-brand-bg text-brand-dark font-bold" x-text="products.length"></span>
+                </button>
+                <button @click="activeTab = 'tips'" 
+                        :class="activeTab === 'tips' ? 'border-b-2 border-brand-green text-brand-dark font-bold bg-white' : 'text-brand-dark/50 hover:text-brand-dark bg-transparent'"
+                        class="px-6 py-3 text-xs md:text-sm uppercase tracking-widest transition-all flex items-center rounded-t-xl">
+                    <span class="mr-2">📖</span> Dicas Naturais
+                    <span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-brand-bg text-brand-dark font-bold" x-text="tips.length"></span>
+                </button>
+            </div>
+
+            <!-- Seção de Produtos -->
+            <div x-show="activeTab === 'products'">
+                <!-- Listagem de Produtos -->
+                <div x-show="view === 'list'" x-transition>
                 <div class="flex justify-between items-center mb-8">
                     <h2 class="font-serif text-3xl text-brand-dark">Produtos Cadastrados</h2>
                     <button @click="openForm()" class="bg-brand-green hover:bg-brand-dark text-white px-6 py-2 rounded-full uppercase tracking-widest text-xs font-bold transition-all shadow-sm flex items-center">
@@ -244,6 +262,130 @@
                     </form>
                 </div>
             </div>
+            <!-- Fim da Seção de Produtos -->
+            </div>
+
+            <!-- Seção de Dicas Naturais -->
+            <div x-show="activeTab === 'tips'" x-transition style="display: none;">
+                
+                <!-- Listagem de Dicas -->
+                <div x-show="tipView === 'list'" x-transition>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                        <div>
+                            <h2 class="font-serif text-3xl text-brand-dark">Dicas Naturais & Estudos</h2>
+                            <p class="text-sm text-brand-dark/60 mt-1">Matérias informativas e estudos científicos exibidos na vitrine da loja.</p>
+                        </div>
+                        <button @click="openTipForm()" class="bg-brand-green hover:bg-brand-dark text-white px-6 py-2.5 rounded-full uppercase tracking-widest text-xs font-bold transition-all shadow-sm flex items-center shrink-0">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Nova Dica
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-brand-dark/5 overflow-hidden">
+                        <template x-if="tips.length === 0">
+                            <div class="p-12 text-center">
+                                <span class="text-4xl block mb-3">📖</span>
+                                <h4 class="font-serif text-xl text-brand-dark mb-1">Nenhuma dica cadastrada ainda</h4>
+                                <p class="text-xs text-brand-dark/50 max-w-sm mx-auto mb-6">Enquanto não houver dicas cadastradas, a seção fica oculta na loja. Clique no botão abaixo para adicionar a primeira!</p>
+                                <button @click="openTipForm()" class="bg-brand-green hover:bg-brand-dark text-white px-6 py-2 rounded-full uppercase tracking-widest text-xs font-bold transition-all shadow-sm">
+                                    Adicionar Primeira Dica
+                                </button>
+                            </div>
+                        </template>
+                        
+                        <ul class="divide-y divide-brand-dark/10">
+                            <template x-for="tip in tips" :key="tip.id">
+                                <li class="p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between hover:bg-brand-bg/30 transition-colors gap-4">
+                                    <div class="flex items-start sm:items-center space-x-5 w-full md:w-auto">
+                                        <img :src="tip.image || 'hero.jpg'" class="w-20 h-20 object-cover rounded-xl border border-brand-dark/10 bg-brand-bg shrink-0">
+                                        <div>
+                                            <span class="text-[0.65rem] text-brand-lavender font-bold uppercase tracking-[0.2em] block mb-1" x-text="tip.category"></span>
+                                            <h3 class="font-serif text-lg text-brand-dark mb-1 font-bold" x-text="tip.title"></h3>
+                                            <p class="text-xs text-brand-dark/70 line-clamp-2 max-w-xl mb-2" x-text="tip.description"></p>
+                                            <template x-if="tip.link">
+                                                <a :href="tip.link" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-xs font-bold text-brand-green hover:underline">
+                                                    <span class="truncate max-w-xs" x-text="tip.link"></span>
+                                                    <svg class="w-3.5 h-3.5 ml-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                                </a>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2 w-full md:w-auto justify-end shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-brand-dark/5">
+                                        <button @click="openTipForm(tip)" class="text-xs uppercase tracking-widest font-bold text-brand-dark/70 hover:text-brand-green transition-colors px-3 py-2 bg-brand-bg rounded-lg">Editar</button>
+                                        <button @click="deleteTip(tip.id)" class="text-xs uppercase tracking-widest font-bold text-red-500 hover:text-red-700 transition-colors px-3 py-2 bg-red-50 rounded-lg">Excluir</button>
+                                    </div>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Formulário de Dica (Criar / Editar) -->
+                <div x-show="tipView === 'form'" x-transition style="display: none;">
+                    <button @click="tipView = 'list'" class="text-brand-dark/60 hover:text-brand-dark flex items-center text-sm font-bold uppercase tracking-widest mb-6">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Voltar para lista de dicas
+                    </button>
+
+                    <div class="bg-white rounded-2xl shadow-lg border border-brand-dark/5 p-6 md:p-8">
+                        <h2 class="font-serif text-3xl text-brand-dark mb-8" x-text="tipForm.id ? 'Editar Dica' : 'Cadastrar Nova Dica'"></h2>
+
+                        <form @submit.prevent="saveTip" class="space-y-6">
+                            
+                            <!-- File Upload da Dica -->
+                            <div class="p-6 border-2 border-dashed border-brand-dark/20 rounded-xl bg-brand-bg/50 text-center">
+                                <label class="block text-sm font-bold text-brand-dark mb-3 uppercase tracking-widest">Foto de Capa da Dica</label>
+                                
+                                <template x-if="tipForm.image && !tipImageFile">
+                                    <div class="mb-4">
+                                        <img :src="tipForm.image" class="h-36 object-cover mx-auto rounded-xl shadow-sm">
+                                        <p class="text-xs text-brand-dark/50 mt-2">Imagem salva atualmente</p>
+                                    </div>
+                                </template>
+
+                                <input type="file" accept="image/*" @change="handleTipImageSelect" class="block w-full text-sm text-brand-dark/70 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:uppercase file:tracking-widest file:bg-brand-green file:text-white hover:file:bg-brand-dark transition-all mx-auto cursor-pointer">
+                                
+                                <div class="mt-4 pt-3 border-t border-brand-dark/10">
+                                    <label class="block text-xs uppercase tracking-widest text-brand-dark/60 mb-1">Ou cole uma URL direta da imagem (ex: Unsplash):</label>
+                                    <input type="url" x-model="tipForm.image" placeholder="https://images.unsplash.com/..." class="w-full max-w-md border border-brand-dark/20 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-brand-green bg-white mx-auto">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs uppercase tracking-widest text-brand-dark/70 mb-1">Título da Dica *</label>
+                                    <input type="text" x-model="tipForm.title" required placeholder="ex: O Poder Calmante da Lavanda" class="w-full border border-brand-dark/20 rounded-lg px-4 py-2 focus:outline-none focus:border-brand-green bg-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-xs uppercase tracking-widest text-brand-dark/70 mb-1">Categoria *</label>
+                                    <input type="text" x-model="tipForm.category" required placeholder="ex: Aromaterapia, Estudos, Saúde da Pele" class="w-full border border-brand-dark/20 rounded-lg px-4 py-2 focus:outline-none focus:border-brand-green bg-transparent">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs uppercase tracking-widest text-brand-dark/70 mb-1">Link de Destino / Estudo *</label>
+                                <input type="url" x-model="tipForm.link" required placeholder="ex: https://sciencedirect.com/... ou https://g1.globo.com/..." class="w-full border border-brand-dark/20 rounded-lg px-4 py-2 focus:outline-none focus:border-brand-green bg-transparent">
+                                <p class="text-xs text-brand-dark/40 mt-1">Ao clicar na dica na loja, o visitante será direcionado para este link em uma nova aba.</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs uppercase tracking-widest text-brand-dark/70 mb-1">Descrição / Resumo da Dica *</label>
+                                <textarea x-model="tipForm.description" required rows="3" placeholder="Explique brevemente o que o estudo ou a matéria ensina sobre os benefícios naturais..." class="w-full border border-brand-dark/20 rounded-lg px-4 py-2 focus:outline-none focus:border-brand-green bg-transparent"></textarea>
+                            </div>
+
+                            <div class="pt-6 border-t border-brand-dark/10 flex justify-end">
+                                <button type="submit" class="bg-brand-green hover:bg-brand-dark text-white font-bold py-4 px-10 rounded-xl uppercase tracking-[0.15em] text-sm transition-all shadow-lg flex items-center">
+                                    <span x-show="uploadingTipImage" class="flex items-center">
+                                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                        Fazendo Upload...
+                                    </span>
+                                    <span x-show="!uploadingTipImage">Salvar Dica no Banco</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -254,11 +396,12 @@
                 email: '',
                 password: '',
                 authError: '',
-                view: 'list', // 'list' ou 'form'
+                activeTab: 'products', // 'products' ou 'tips'
+                view: 'list', // 'list' ou 'form' (para produtos)
                 products: [],
                 loading: true,
 
-                // Estado do form
+                // Estado do form de produtos
                 form: {
                     id: null,
                     name: '',
@@ -272,6 +415,20 @@
                 newBenefit: { title: '', desc: '' },
                 uploadingImage: false,
                 imageFile: null,
+
+                // Estado de Dicas Naturais
+                tipView: 'list', // 'list' ou 'form'
+                tips: [],
+                tipForm: {
+                    id: null,
+                    title: '',
+                    category: '',
+                    link: '',
+                    description: '',
+                    image: ''
+                },
+                uploadingTipImage: false,
+                tipImageFile: null,
 
                 init() {
                     try {
@@ -298,6 +455,7 @@
                             this.user = user;
                             if (user) {
                                 this.fetchProducts();
+                                this.fetchTips();
                             }
                         });
                         
@@ -422,6 +580,100 @@
                         } catch(e) {
                             console.error(e);
                             alert("Erro ao excluir.");
+                        }
+                        this.loading = false;
+                    }
+                },
+
+                // Métodos de Dicas Naturais
+                async fetchTips() {
+                    try {
+                        let snap;
+                        try {
+                            snap = await this.db.collection('dicas').orderBy('createdAt', 'desc').get();
+                        } catch(err) {
+                            snap = await this.db.collection('dicas').get();
+                        }
+                        this.tips = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    } catch(e) {
+                        console.error("Erro ao buscar dicas:", e);
+                    }
+                },
+
+                openTipForm(tip = null) {
+                    if (tip) {
+                        this.tipForm = JSON.parse(JSON.stringify(tip));
+                    } else {
+                        this.tipForm = {
+                            id: null,
+                            title: '',
+                            category: '',
+                            link: '',
+                            description: '',
+                            image: ''
+                        };
+                    }
+                    this.tipImageFile = null;
+                    this.tipView = 'form';
+                },
+
+                handleTipImageSelect(event) {
+                    if (event.target.files.length > 0) {
+                        this.tipImageFile = event.target.files[0];
+                    }
+                },
+
+                async saveTip() {
+                    this.loading = true;
+                    try {
+                        // 1. Upload da imagem da dica se selecionada
+                        if (this.tipImageFile) {
+                            this.uploadingTipImage = true;
+                            const storageRef = this.storage.ref();
+                            const imgRef = storageRef.child(`dicas/${Date.now()}_${this.tipImageFile.name}`);
+                            await imgRef.put(this.tipImageFile);
+                            this.tipForm.image = await imgRef.getDownloadURL();
+                            this.uploadingTipImage = false;
+                        }
+
+                        // 2. Dados da dica
+                        const tipData = {
+                            title: this.tipForm.title.trim(),
+                            category: this.tipForm.category.trim(),
+                            link: this.tipForm.link.trim(),
+                            description: this.tipForm.description.trim(),
+                            image: this.tipForm.image || '',
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        };
+
+                        // 3. Salva no Firestore
+                        if (this.tipForm.id) {
+                            await this.db.collection('dicas').doc(this.tipForm.id).update(tipData);
+                        } else {
+                            tipData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                            await this.db.collection('dicas').add(tipData);
+                        }
+
+                        // 4. Atualiza a lista
+                        await this.fetchTips();
+                        this.tipView = 'list';
+                    } catch(e) {
+                        console.error("Erro ao salvar dica:", e);
+                        alert("Erro ao salvar dica. Verifique a conexão com o Firebase.");
+                        this.uploadingTipImage = false;
+                    }
+                    this.loading = false;
+                },
+
+                async deleteTip(id) {
+                    if (confirm("Tem certeza que deseja excluir esta dica natural?")) {
+                        this.loading = true;
+                        try {
+                            await this.db.collection('dicas').doc(id).delete();
+                            await this.fetchTips();
+                        } catch(e) {
+                            console.error(e);
+                            alert("Erro ao excluir dica.");
                         }
                         this.loading = false;
                     }
