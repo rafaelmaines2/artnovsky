@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArtNovsky | Cosméticos Naturais</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Great+Vibes&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration Baseada na Identidade Visual -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            bg: '#F4EFE6',       /* Bege cremoso do fundo */
+                            dark: '#4A2B29',     /* Marrom/Bordô escuro dos textos principais */
+                            green: '#5A6B41',    /* Verde dos ícones e folhas */
+                            lavender: '#7A5C96', /* Roxo/Lavanda dos títulos de ingredientes */
+                            pink: '#E8D3D8',     /* Rosa pálido dos fundos de ícones */
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['Lato', 'sans-serif'],
+                        script: ['"Great Vibes"', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        .hero-overlay {
+            background: linear-gradient(to right, rgba(244, 239, 230, 0.95) 0%, rgba(244, 239, 230, 0.4) 100%);
+        }
+        
+        /* 3D Flip Card Styles */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .group:hover .group-hover\:rotate-y-180 { transform: rotateY(180deg); }
+        
+        /* Scrollbar suave para o verso do card */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(74, 43, 41, 0.05); 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(74, 43, 41, 0.2); 
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="font-sans text-brand-dark bg-brand-bg antialiased selection:bg-brand-green selection:text-white" 
+      x-data="shopData()">
+
+    <!-- Navbar -->
+    <nav class="absolute top-0 left-0 w-full z-40 border-b border-brand-dark/10 bg-[#F2EDDA] py-1">
+         
+        <!-- Left Leaves Decoration -->
+        <div class="absolute top-0 left-0 h-full w-auto pointer-events-none">
+            <img src="leaves-left.png" class="h-full w-auto object-cover mix-blend-darken" style="-webkit-mask-image: linear-gradient(to right, black 30%, transparent 100%); mask-image: linear-gradient(to right, black 30%, transparent 100%);">
+        </div>
+        
+        <!-- Right Leaves Decoration -->
+        <div class="absolute top-0 right-0 h-full w-auto pointer-events-none">
+            <img src="leaves-right.png" class="h-full w-auto object-cover mix-blend-darken" style="-webkit-mask-image: linear-gradient(to left, black 30%, transparent 100%); mask-image: linear-gradient(to left, black 30%, transparent 100%);">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center relative z-10 w-full">
+            <!-- Exact Logo Image (No Crop Needed) -->
+            <div class="flex flex-col items-center pl-8 md:pl-24 py-2 shrink-0">
+                <a href="#" class="block shrink-0 flex items-center justify-center">
+                    <img src="logo-text.png" alt="ArtNovsky" class="h-14 md:h-20 w-auto mix-blend-darken object-contain transition-transform hover:scale-105">
+                </a>
+                <span class="hidden md:block text-[0.55rem] uppercase tracking-[0.2em] text-brand-dark/70 mt-1 font-sans">Cuidando de você em harmonia com a natureza</span>
+            </div>
+            
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex space-x-8 items-center bg-[#F2EDDA]/90 px-6 py-2 rounded-full backdrop-blur-md shadow-sm border border-brand-dark/5 mr-4 md:mr-10">
+                <a href="#sobre" class="text-brand-dark/90 font-bold hover:text-brand-green transition-colors text-xs uppercase tracking-[0.15em]">Sobre</a>
+                <a href="#produtos" class="text-brand-dark/90 font-bold hover:text-brand-green transition-colors text-xs uppercase tracking-[0.15em]">Loja</a>
+                <a href="#conteudo" class="text-brand-dark/90 font-bold hover:text-brand-green transition-colors text-xs uppercase tracking-[0.15em]">Conteúdo</a>
+                <a href="#contato" class="text-brand-dark/90 font-bold hover:text-brand-green transition-colors text-xs uppercase tracking-[0.15em]">Contato</a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-[#4A2B29] focus:outline-none bg-[#F2EDDA]/80 p-2 rounded-lg backdrop-blur-sm mr-2 shadow-sm border border-brand-dark/5 relative z-20" @click="mobileMenuOpen = !mobileMenuOpen">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div x-show="mobileMenuOpen" class="md:hidden bg-[#F2EDDA] shadow-xl absolute w-full border-t border-brand-dark/10" 
+             x-transition.opacity style="display: none;">
+            <div class="px-4 pt-2 pb-6 space-y-2 relative z-10">
+                <a @click="mobileMenuOpen = false" href="#sobre" class="block px-3 py-3 text-brand-dark font-bold hover:bg-white/50 text-sm uppercase tracking-widest text-center">Sobre a Marca</a>
+                <a @click="mobileMenuOpen = false" href="#produtos" class="block px-3 py-3 text-brand-dark font-bold hover:bg-white/50 text-sm uppercase tracking-widest text-center">Nossos Produtos</a>
+                <a @click="mobileMenuOpen = false" href="#conteudo" class="block px-3 py-3 text-brand-dark font-bold hover:bg-white/50 text-sm uppercase tracking-widest text-center">Conteúdo</a>
+                <a @click="mobileMenuOpen = false" href="#contato" class="block px-3 py-3 text-brand-dark font-bold hover:bg-white/50 text-sm uppercase tracking-widest text-center">Contato</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative h-screen flex items-center justify-start bg-cover bg-right md:bg-[position:80%_center]" 
+            style="background-image: url('hero.jpg');">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#F4EFE6] via-[#F4EFE6]/70 via-40% to-transparent to-70%"></div>
+        
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-20">
+            <div class="max-w-xl">
+                <!-- Floral decoration subtle -->
+                <svg class="w-12 h-12 text-brand-green/60 mb-6" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c1.1 0 2 .9 2 2 0 3.3-2 6-2 9-2.2 0-4-1.8-4-4s1.8-4 4-4v-3zM12 24c-1.1 0-2-.9-2-2 0-3.3 2-6 2-9 2.2 0 4 1.8 4 4s-1.8 4-4 4v3zM24 12c0-1.1-.9-2-2-2-3.3 0-6 2-9 2 0 2.2 1.8 4 4 4s4-1.8 4-4h3zM0 12c0 1.1.9 2 2 2 3.3 0 6-2 9-2 0-2.2-1.8-4-4-4s-4 1.8-4 4h-3z"/></svg>
+                
+                <h1 class="text-5xl md:text-7xl font-serif text-brand-dark leading-[1.1] mb-6">
+                    Cuidando de você em harmonia com a <span class="text-brand-green">natureza</span> ♡
+                </h1>
+                <p class="text-lg md:text-xl text-brand-dark/80 mb-10 font-light leading-relaxed">
+                    Beleza natural é se cuidar com consciência. Fórmulas botânicas cuidadosamente elaboradas e criadas artesanalmente.
+                </p>
+                <a href="#produtos" class="inline-flex items-center bg-brand-green text-white px-10 py-4 rounded-full uppercase tracking-[0.2em] text-xs hover:bg-brand-dark transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                    Descobrir a Linha
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Faixa de Diferenciais -->
+    <section class="bg-[#F4EFE6] py-16 border-b border-brand-dark/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-brand-dark/10">
+                
+                <div class="flex flex-col items-center px-4 py-4 md:py-0">
+                    <svg class="w-10 h-10 text-brand-green mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                    <h3 class="font-serif text-lg text-brand-dark mb-2">PURO & BOTÂNICO</h3>
+                    <p class="text-sm text-brand-dark/70 font-light leading-relaxed">Ingredientes cuidadosamente selecionados de origem vegetal.</p>
+                </div>
+                
+                <div class="flex flex-col items-center px-4 py-4 md:py-0">
+                    <svg class="w-10 h-10 text-brand-green mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                    <h3 class="font-serif text-lg text-brand-dark mb-2">FEITO ARTESANALMENTE</h3>
+                    <p class="text-sm text-brand-dark/70 font-light leading-relaxed">Produção em pequenos lotes, com cuidado em cada etapa.</p>
+                </div>
+                
+                <div class="flex flex-col items-center px-4 py-4 md:py-0">
+                    <svg class="w-10 h-10 text-brand-green mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                    <h3 class="font-serif text-lg text-brand-dark mb-2">BELEZA CONSCIENTE</h3>
+                    <p class="text-sm text-brand-dark/70 font-light leading-relaxed">Cuidado inspirado na natureza e no bem-estar.</p>
+                </div>
+                
+                <div class="flex flex-col items-center px-4 py-4 md:py-0">
+                    <svg class="w-10 h-10 text-brand-green mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    <h3 class="font-serif text-lg text-brand-dark mb-2">FÓRMULAS CUIDADOSAMENTE ELABORADAS</h3>
+                    <p class="text-sm text-brand-dark/70 font-light leading-relaxed">Combinações pensadas para transformar o cuidado diário em um ritual especial.</p>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <!-- Sobre a Marca -->
+    <section id="sobre" class="relative py-24 bg-cover bg-left md:bg-[position:20%_center]" style="background-image: url('story-image.jpg');">
+        <!-- Gradient Overlay para o texto -->
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent from-20% via-[#F4EFE6]/70 via-60% to-[#F4EFE6] to-90%"></div>
+        
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                <!-- Coluna vazia para empurrar o texto para a direita -->
+                <div class="hidden md:block"></div>
+                
+                <!-- Conteúdo -->
+                <div class="bg-[#F4EFE6]/80 md:bg-transparent p-6 md:p-0 rounded-2xl md:rounded-none">
+                    <h2 class="text-4xl font-serif text-brand-dark mb-6">Nossa História & Filosofia</h2>
+                    <p class="text-brand-dark/80 mb-6 leading-relaxed text-lg">
+                        A ArtNovsky nasceu do encanto pela natureza e do desejo de transformar ingredientes cuidadosamente escolhidos em pequenos rituais de cuidado.
+                    </p>
+                    <p class="text-brand-dark/80 mb-6 leading-relaxed text-lg">
+                        Acreditamos em uma beleza mais simples e consciente, que valoriza fórmulas artesanais e ingredientes de origem vegetal.
+                    </p>
+                    <p class="text-brand-dark/80 mb-6 leading-relaxed text-lg">
+                        Cada produto é preparado em pequenos lotes, com atenção aos detalhes e combinações especiais de óleos vegetais, hidrolatos, extratos botânicos e óleos essenciais.
+                    </p>
+                    <p class="text-brand-dark/80 mb-8 leading-relaxed text-lg">
+                        Mais do que criar cosméticos, queremos transformar o cuidado diário em um momento de conexão consigo e com a natureza.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+                        <div class="border-l-2 border-brand-green pl-4">
+                            <h4 class="font-serif text-xl text-brand-dark mb-2">PURO & BOTÂNICO</h4>
+                            <p class="text-sm text-brand-dark/70 font-light">Fórmulas cuidadosamente elaboradas, valorizando ingredientes de origem vegetal.</p>
+                        </div>
+                        <div class="border-l-2 border-brand-green pl-4">
+                            <h4 class="font-serif text-xl text-brand-dark mb-2">FEITO ARTESANALMENTE</h4>
+                            <p class="text-sm text-brand-dark/70 font-light">Produção em pequenos lotes, com atenção aos detalhes em cada etapa.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Loja (Produtos) -->
+    <section id="produtos" class="py-24 bg-brand-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <svg class="w-8 h-8 text-brand-lavender mx-auto mb-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                <h2 class="text-4xl font-serif text-brand-dark mb-4">Nosso Cuidado Natural</h2>
+                <p class="text-brand-dark/70 text-lg font-light">Ingredientes da natureza transformados em rituais de cuidado para a sua pele.</p>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+                <template x-for="product in products" :key="product.id">
+                    <!-- Outer Perspective Container -->
+                    <div class="perspective-1000 group h-[480px]">
+                        <!-- Inner 3D Container -->
+                        <div class="relative w-full h-full transition-transform duration-700 transform-style-3d group-hover:rotate-y-180">
+                            
+                            <!-- FRONT OF CARD -->
+                            <div class="absolute inset-0 w-full h-full backface-hidden flex flex-col bg-white rounded-2xl shadow-sm border border-brand-dark/5 overflow-hidden cursor-default">
+                                <!-- Product Image -->
+                                <div class="relative h-64 overflow-hidden bg-brand-bg/50 flex items-center justify-center p-6 shrink-0">
+                                    <img :src="product.image" :alt="product.name" class="w-auto h-full object-contain mix-blend-multiply">
+                                </div>
+                                
+                                <div class="p-6 text-center relative flex-1 flex flex-col justify-center">
+                                    <!-- Small floating leaf icon -->
+                                    <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-brand-green border border-brand-dark/10">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                                    </div>
+
+                                    <span x-text="product.category" class="text-[0.6rem] text-brand-lavender font-bold uppercase tracking-[0.2em] block mb-2"></span>
+                                    <h3 x-text="product.name" class="font-serif text-xl text-brand-dark mb-2 leading-tight"></h3>
+                                    <p x-text="product.price" class="text-brand-green font-bold mb-4 text-base"></p>
+                                    <div class="text-[0.65rem] font-bold text-brand-dark/40 uppercase tracking-[0.1em] mx-auto flex items-center justify-center">
+                                        <svg class="w-4 h-4 mr-1 animate-pulse text-brand-lavender/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                                        Passe o mouse
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- BACK OF CARD -->
+                            <div class="absolute inset-0 w-full h-full backface-hidden rotate-y-180 bg-[#fdfcfa] text-brand-dark p-6 rounded-2xl shadow-xl border border-brand-dark/10 flex flex-col cursor-default">
+                                <h3 x-text="product.name" class="font-serif text-xl text-brand-dark mb-3 text-center border-b border-brand-dark/10 pb-3"></h3>
+                                
+                                <div class="flex-1 overflow-y-auto text-sm pr-2 custom-scrollbar space-y-4 text-left">
+                                    <p class="text-brand-dark/80 font-light italic text-[0.8rem] leading-relaxed" x-text="product.description"></p>
+                                    
+                                    <div>
+                                        <h4 class="text-[0.65rem] font-bold uppercase tracking-widest text-brand-lavender mb-2">Benefícios</h4>
+                                        <ul class="space-y-2">
+                                            <template x-for="benefit in product.benefits" :key="benefit.title">
+                                                <li class="flex items-start text-xs">
+                                                    <svg class="w-3 h-3 text-brand-green mr-1.5 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                    <span class="text-brand-dark/80 leading-snug"><strong x-text="benefit.title" class="text-brand-dark font-bold"></strong> - <span x-text="benefit.desc"></span></span>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="text-[0.65rem] font-bold uppercase tracking-widest text-brand-green mb-1">Fórmula</h4>
+                                        <p class="text-brand-dark/60 text-[0.65rem] leading-relaxed" x-text="product.ingredients"></p>
+                                    </div>
+                                </div>
+
+                                <div class="pt-4 mt-4 border-t border-brand-dark/10">
+                                    <button @click="openModal(product)" class="w-full bg-brand-green hover:bg-brand-dark text-white font-bold h-12 rounded-xl uppercase tracking-[0.15em] text-[0.65rem] transition-all shadow-md flex items-center justify-center">
+                                        Adicionar no Carrinho
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </section>
+
+    <!-- Badges Section -->
+    <section class="py-16 bg-brand-dark text-brand-bg border-y border-brand-bg/10">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-around items-center space-y-8 md:space-y-0 text-center">
+            <div class="flex flex-col items-center">
+                <svg class="w-12 h-12 text-brand-green mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <h4 class="font-sans uppercase tracking-widest text-xs font-bold mb-1">Ingredientes</h4>
+                <p class="text-sm font-light text-brand-bg/70">Naturais e Renováveis</p>
+            </div>
+            <div class="flex flex-col items-center">
+                <svg class="w-12 h-12 text-brand-green mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path></svg>
+                <h4 class="font-sans uppercase tracking-widest text-xs font-bold mb-1">Cruelty Free</h4>
+                <p class="text-sm font-light text-brand-bg/70">Não testado em animais</p>
+            </div>
+            <div class="flex flex-col items-center">
+                <svg class="w-12 h-12 text-brand-green mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                <h4 class="font-sans uppercase tracking-widest text-xs font-bold mb-1">Beleza Consciente</h4>
+                <p class="text-sm font-light text-brand-bg/70">Em harmonia com a natureza</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog / Conteúdo -->
+    <section id="conteudo" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-end mb-12 border-b border-brand-dark/10 pb-6">
+                <div>
+                    <h2 class="text-4xl font-serif text-brand-dark">Dicas Naturais</h2>
+                    <p class="text-brand-dark/60 mt-2">Conhecimento e bem-estar para a sua rotina.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Post 1 -->
+                <div class="group cursor-pointer">
+                    <div class="overflow-hidden rounded-xl h-64 mb-6 shadow-sm">
+                        <img src="hero.jpg" alt="Lavanda" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <span class="text-brand-lavender text-xs uppercase tracking-[0.15em] font-bold">Aromaterapia</span>
+                    <h3 class="font-serif text-2xl text-brand-dark mt-2 mb-3 group-hover:text-brand-green transition-colors">O Poder Calmante da Lavanda</h3>
+                    <p class="text-brand-dark/70 text-sm leading-relaxed">Descubra como o hidrolato de lavanda pode transformar seu ritual de autocuidado em um momento relaxante antes de dormir.</p>
+                </div>
+                <!-- Post 2 -->
+                <div class="group cursor-pointer">
+                    <div class="overflow-hidden rounded-xl h-64 mb-6 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=600&q=80" alt="Ingredientes" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <span class="text-brand-lavender text-xs uppercase tracking-[0.15em] font-bold">Saúde da Pele</span>
+                    <h3 class="font-serif text-2xl text-brand-dark mt-2 mb-3 group-hover:text-brand-green transition-colors">Cosméticos Industriais vs Naturais</h3>
+                    <p class="text-brand-dark/70 text-sm leading-relaxed">Por que abandonar ingredientes sintéticos e abraçar a nutrição profunda que apenas os óleos vegetais oferecem.</p>
+                </div>
+                <!-- Post 3 -->
+                <div class="group cursor-pointer">
+                    <div class="overflow-hidden rounded-xl h-64 mb-6 shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1611079830811-865ff4428d17?auto=format&fit=crop&w=600&q=80" alt="Skincare" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <span class="text-brand-lavender text-xs uppercase tracking-[0.15em] font-bold">Rotina</span>
+                    <h3 class="font-serif text-2xl text-brand-dark mt-2 mb-3 group-hover:text-brand-green transition-colors">Rotina Essencial: Como Começar</h3>
+                    <p class="text-brand-dark/70 text-sm leading-relaxed">Os passos simples para inserir o Sérum Rejuvenescedor e o Desodorante Natural no seu dia a dia.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer / Contato -->
+    <footer id="contato" class="bg-brand-bg text-brand-dark pt-20 pb-10 border-t border-brand-dark/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
+                <div class="md:col-span-2">
+                    <img src="logo-text.png" alt="ArtNovsky" class="h-14 md:h-20 w-auto mix-blend-darken object-contain mb-6 -ml-2">
+                    <p class="text-brand-dark/80 leading-relaxed mb-6 max-w-md">
+                        Nascemos do desejo de reconectar a beleza com a natureza. Todos os nossos produtos são feitos à mão, com muito amor e respeito ao meio ambiente.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-serif text-lg mb-4 text-brand-dark border-b border-brand-dark/10 pb-2">Contato Rápido</h4>
+                    <ul class="space-y-3 text-brand-dark/80 text-sm">
+                        <li>Fale conosco pelo WhatsApp:</li>
+                        <li><a href="https://wa.me/5548999462200" target="_blank" class="text-brand-green font-bold hover:text-brand-dark transition-colors">(48) 99946-2200</a></li>
+                        <li>contato@artnovsky.com.br</li>
+                        <li>Florianópolis, SC</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-brand-dark/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-brand-dark/50">
+                <p>&copy; 2026 ArtNovsky Cosméticos Naturais. Todos os direitos reservados.</p>
+                <p class="mt-4 md:mt-0 uppercase tracking-widest">Feito em harmonia com a Terra.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Fixed WhatsApp Button -->
+    <a href="https://wa.me/5548999462200" target="_blank" 
+       class="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 hover:shadow-[#25D366]/50 transition-all z-40 group flex items-center justify-center">
+        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.618-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.418-.097.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964 1.038-3.562c-.687-1.063-1.05-2.303-1.05-3.589 0-3.693 3.003-6.697 6.697-6.697 3.694 0 6.696 3.004 6.696 6.697 0 3.694-3.002 6.696-6.696 6.696z"/></svg>
+    </a>
+
+    <!-- Floating Cart Button -->
+    <button x-show="cart.length > 0" x-transition @click="cartModalOpen = true" style="display: none;"
+       class="fixed bottom-6 left-6 bg-[#25D366] text-white px-6 py-4 rounded-full shadow-[0_10px_40px_rgba(37,211,102,0.4)] hover:scale-105 transition-all z-40 flex items-center justify-center animate-[bounce_2s_infinite]">
+        <svg class="w-7 h-7 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+        <div class="flex flex-col text-left">
+            <span class="text-[0.65rem] uppercase tracking-widest leading-none font-bold opacity-90 mb-0.5">Ver Carrinho</span>
+            <span class="font-bold leading-none text-sm"><span x-text="cartTotalItems()"></span> Itens</span>
+        </div>
+    </button>
+
+    <!-- Cart Modal -->
+    <div x-show="cartModalOpen" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;"
+         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        
+        <div class="fixed inset-0 bg-brand-dark/80 backdrop-blur-sm" @click="cartModalOpen = false"></div>
+
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+            <div class="bg-brand-bg rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all border border-brand-dark/10" @click.stop>
+                <div class="p-6 border-b border-brand-dark/10 flex justify-between items-center bg-white">
+                    <h2 class="font-serif text-2xl text-brand-dark flex items-center">
+                        <svg class="w-6 h-6 mr-3 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        Seu Carrinho
+                    </h2>
+                    <button @click="cartModalOpen = false" class="text-brand-dark/50 hover:text-brand-dark">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                
+                <div class="p-6 max-h-[60vh] overflow-y-auto">
+                    <template x-if="cart.length === 0">
+                        <p class="text-center text-brand-dark/60 py-8">Seu carrinho está vazio.</p>
+                    </template>
+                    <ul class="space-y-4">
+                        <template x-for="(item, index) in cart" :key="index">
+                            <li class="flex items-center justify-between bg-white p-3 rounded-lg border border-brand-dark/5 shadow-sm">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-16 h-16 bg-brand-bg rounded-md flex items-center justify-center overflow-hidden border border-brand-dark/5">
+                                        <img :src="item.product.image" class="w-12 object-contain mix-blend-multiply">
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-brand-dark leading-tight" x-text="item.product.name"></p>
+                                        <p class="text-xs text-brand-green font-bold mt-1" x-text="item.product.price + ' (x' + item.quantity + ')'"></p>
+                                    </div>
+                                </div>
+                                <button @click="removeFromCart(index)" class="text-red-400 hover:text-red-600 p-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+                
+                <div class="p-6 bg-white border-t border-brand-dark/10">
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="font-bold text-brand-dark/70 uppercase tracking-widest text-xs">Total Estimado</span>
+                        <span class="font-serif text-2xl text-brand-green" x-text="formatTotal()"></span>
+                    </div>
+                    <button @click="sendOrderToWhatsApp()" :disabled="cart.length === 0" 
+                            class="w-full bg-[#25D366] hover:bg-[#1ebd59] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl flex items-center justify-center space-x-2 transition-all shadow-lg transform hover:-translate-y-0.5">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.618-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.418-.097.824z"/></svg>
+                        <span class="tracking-widest uppercase text-xs">Enviar Pedido no WhatsApp</span>
+                    </button>
+                    <button @click="cartModalOpen = false" class="w-full mt-4 text-center text-xs text-brand-dark/60 hover:text-brand-dark uppercase tracking-widest font-bold underline transition-colors">
+                        Continuar Comprando
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Details Modal (Alpine.js) -->
+    <div x-show="modalOpen" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        
+        <div class="fixed inset-0 bg-brand-dark/80 backdrop-blur-sm" @click="closeModal()"></div>
+
+        <!-- Modal Content -->
+        <div class="relative min-h-screen flex items-center justify-center p-4 py-10">
+            <div class="bg-brand-bg rounded-xl shadow-2xl max-w-5xl w-full overflow-hidden flex flex-col md:flex-row transform transition-all border border-brand-dark/10"
+                 @click.stop>
+                
+                <button @click="closeModal()" class="absolute top-4 right-4 z-20 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm text-brand-dark hover:text-brand-green transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+
+                <!-- Image Side -->
+                <div class="w-full md:w-5/12 bg-white p-8 flex items-center justify-center relative">
+                    <div class="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/rice-paper-2.png')] opacity-30 pointer-events-none"></div>
+                    <img :src="activeProduct?.image" :alt="activeProduct?.name" class="w-auto max-h-[500px] object-contain relative z-10 mix-blend-multiply">
+                </div>
+
+                <!-- Text Side (The Ficha Técnica) -->
+                <div class="w-full md:w-7/12 flex flex-col bg-brand-bg max-h-[85vh] md:max-h-[90vh]">
+                    <!-- Scrollable Content -->
+                    <div class="p-8 md:p-12 pb-4 flex-1 overflow-y-auto">
+                        <span x-text="activeProduct?.category" class="text-brand-lavender uppercase tracking-[0.2em] text-xs font-bold mb-2 block"></span>
+                        <h3 x-text="activeProduct?.name" class="font-serif text-3xl md:text-4xl text-brand-dark mb-1 leading-tight"></h3>
+                        <p class="text-brand-green font-bold text-2xl mb-4" x-text="activeProduct?.price"></p>
+                        <p class="text-brand-dark/70 font-script text-2xl mb-6" x-text="activeProduct?.description"></p>
+                        
+                        <!-- Benefits List matching the brochure -->
+                        <div class="mb-8">
+                            <h4 class="font-serif text-xl text-brand-lavender mb-4 border-b border-brand-lavender/20 pb-2">Por que usar?</h4>
+                            <ul class="space-y-4">
+                                <template x-for="benefit in activeProduct?.benefits" :key="benefit.title">
+                                    <li class="flex items-start">
+                                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-brand-pink flex items-center justify-center mt-1 mr-4 text-brand-lavender">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7"></path></svg>
+                                        </div>
+                                        <div>
+                                            <strong class="text-sm text-brand-lavender uppercase tracking-wide block" x-text="benefit.title"></strong>
+                                            <span class="text-sm text-brand-dark/80 leading-snug block mt-0.5" x-text="benefit.desc"></span>
+                                        </div>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+
+                        <!-- Ingredients -->
+                        <div class="mb-2 bg-white p-6 rounded-lg border border-brand-dark/5">
+                            <h4 class="font-serif text-xl text-brand-green mb-3 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                Fórmula Natural
+                            </h4>
+                            <p class="text-sm text-brand-dark/80 leading-relaxed font-light" x-text="activeProduct?.ingredients"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Fixed Bottom Action Area -->
+                    <div class="p-6 md:p-8 bg-brand-bg border-t border-brand-dark/10 shadow-[0_-20px_20px_-15px_rgba(244,239,230,1)] z-10">
+                        <div class="flex flex-col sm:flex-row gap-4 items-center mb-3">
+                            <!-- Qty Selector -->
+                            <div class="flex items-center justify-between border border-brand-dark/20 rounded-xl bg-white w-full sm:w-32 h-14 shrink-0 overflow-hidden">
+                                <button @click="if(quantityToAdd > 1) quantityToAdd--" class="w-10 text-brand-dark hover:bg-brand-bg transition-colors h-full font-bold text-xl flex items-center justify-center">-</button>
+                                <div class="flex-1 text-center text-brand-dark font-bold text-lg select-none" x-text="quantityToAdd"></div>
+                                <button @click="quantityToAdd++" class="w-10 text-brand-dark hover:bg-brand-bg transition-colors h-full font-bold text-xl flex items-center justify-center">+</button>
+                            </div>
+                            
+                            <!-- Add to cart -->
+                            <button @click="addToCart()" class="w-full bg-brand-green hover:bg-brand-dark text-white font-bold h-14 rounded-xl uppercase tracking-[0.15em] text-xs transition-all shadow-md">
+                                Adicionar ao Carrinho
+                            </button>
+                        </div>
+                        <button @click="closeModal()" class="w-full text-center text-xs text-brand-dark/60 hover:text-brand-dark uppercase tracking-widest font-bold underline transition-colors">
+                            Selecionar mais produtos
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDnrUz6kpjKD9HX6QLId0iIyZJiqL8iGcE",
+            authDomain: "artnovsky-2c6d9.firebaseapp.com",
+            projectId: "artnovsky-2c6d9",
+            storageBucket: "artnovsky-2c6d9.firebasestorage.app",
+            messagingSenderId: "447937696787",
+            appId: "1:447937696787:web:8f93b408f25b67b6541be6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+    </script>
+
+    <!-- Alpine.js Logic -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('shopData', () => ({
+                scrolled: false,
+                mobileMenuOpen: false,
+                modalOpen: false,
+                activeProduct: null,
+                products: [],
+                loading: true,
+
+                // Cart State
+                cart: [],
+                cartModalOpen: false,
+                quantityToAdd: 1,
+                
+                async init() {
+                    try {
+                        const snapshot = await db.collection('catalogo').get();
+                        const fetchedProducts = [];
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            fetchedProducts.push({ 
+                                id: doc.id, 
+                                image: data.image || 'hero.jpg', // fallback image
+                                benefits: data.benefits || [],
+                                ...data 
+                            });
+                        });
+                        this.products = fetchedProducts;
+                        this.loading = false;
+                    } catch (error) {
+                        console.error("Erro ao carregar produtos do Firebase:", error);
+                        this.loading = false;
+                    }
+                },
+
+                openModal(product) {
+                    this.activeProduct = product;
+                    this.quantityToAdd = 1;
+                    this.modalOpen = true;
+                    document.body.style.overflow = 'hidden';
+                },
+                
+                closeModal() {
+                    this.modalOpen = false;
+                    document.body.style.overflow = '';
+                },
+
+                // Cart Methods
+                addToCart() {
+                    const existing = this.cart.find(i => i.product.id === this.activeProduct.id);
+                    const qty = parseInt(this.quantityToAdd);
+                    if (existing) {
+                        existing.quantity += qty;
+                    } else {
+                        this.cart.push({
+                            product: this.activeProduct,
+                            quantity: qty
+                        });
+                    }
+                    this.closeModal();
+                    // Opcional: abrir o modal do carrinho automaticamente após adicionar
+                    // this.cartModalOpen = true;
+                },
+
+                removeFromCart(index) {
+                    this.cart.splice(index, 1);
+                    if (this.cart.length === 0) {
+                        this.cartModalOpen = false;
+                    }
+                },
+
+                cartTotalItems() {
+                    return this.cart.reduce((total, item) => total + item.quantity, 0);
+                },
+
+                parsePrice(priceStr) {
+                    if (!priceStr) return 0;
+                    // Extrai apenas números e vírgula, e converte para float
+                    const cleanStr = priceStr.replace(/[^\d,-]/g, '').replace(',', '.');
+                    return parseFloat(cleanStr) || 0;
+                },
+
+                formatTotal() {
+                    const total = this.cart.reduce((sum, item) => {
+                        return sum + (this.parsePrice(item.product.price) * item.quantity);
+                    }, 0);
+                    return total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                },
+
+                sendOrderToWhatsApp() {
+                    let msg = "Olá! Gostaria de fazer um pedido pelo site:%0A%0A";
+                    this.cart.forEach(item => {
+                        msg += `- ${item.quantity}x ${item.product.name} (${item.product.price})%0A`;
+                    });
+                    msg += `%0A*Total: ${this.formatTotal()}*%0A%0A`;
+                    msg += "Como podemos seguir com o pagamento e entrega?";
+                    
+                    window.open(`https://wa.me/5548999462200?text=${msg}`, '_blank');
+                }
+            }))
+        })
+    </script>
+</body>
+</html>

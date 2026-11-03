@@ -1,0 +1,11 @@
+# Hosting & Deployment metadata
+.netlify
+.vercel
+
+# Operating System files
+Thumbs.db
+.DS_Store
+
+# Logs & temp files
+*.log
+screenshot_*.png

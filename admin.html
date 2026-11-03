@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo | ArtNovsky</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Pinyon+Script&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            bg: '#F4EFE6',
+                            dark: '#4A2B29',
+                            green: '#5A6B41',
+                            lavender: '#7A5C96',
+                            pink: '#E8D3D8',
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['Lato', 'sans-serif'],
+                        script: ['"Pinyon Script"', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Firebase Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+</head>
+<body class="bg-brand-bg font-sans text-brand-dark min-h-screen selection:bg-brand-green selection:text-white" x-data="adminApp()">
+
+    <!-- Navbar Admin -->
+    <nav class="bg-white border-b border-brand-dark/10 shadow-sm py-3 px-6 flex justify-between items-center fixed w-full top-0 z-50">
+        <div class="flex items-center space-x-3">
+            <span class="font-script text-3xl text-brand-dark leading-none pt-1">ArtNovsky</span>
+            <span class="text-xs uppercase tracking-widest text-brand-dark/50 border-l border-brand-dark/20 pl-3">Painel Admin</span>
+        </div>
+        <template x-if="user">
+            <div class="flex items-center space-x-4">
+                <span class="text-sm font-light hidden md:inline" x-text="user.email"></span>
+                <button @click="logout()" class="text-xs font-bold uppercase tracking-widest text-brand-dark/70 hover:text-red-600 transition-colors">Sair</button>
+            </div>
+        </template>
+    </nav>
+
+    <main class="pt-24 pb-12 max-w-5xl mx-auto px-4 sm:px-6">
+        
+        <!-- Loading global -->
+        <div x-show="loading && !uploadingImage" class="fixed inset-0 bg-brand-bg/80 backdrop-blur-sm z-[100] flex items-center justify-center">
+            <svg class="animate-spin h-10 w-10 text-brand-green" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        </div>
+
+        <!-- Tela de Login -->
+        <div x-show="!user" class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-lg border border-brand-dark/5 mt-10">
+            <div class="text-center mb-8">
+                <h2 class="font-serif text-3xl text-brand-dark mb-2">Acesso Restrito</h2>
+                <p class="text-sm text-brand-dark/60">Faça login para gerenciar o catálogo.</p>
+            </div>
+            
+            <div x-show="authError" class="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm" x-text="authError"></div>
+
+            <form @submit.prevent="login" class="space-y-5">
+                <div>
+                    <label class="block text-xs uppercase tracking-widest text-brand-dark/70 mb-1">E-mail</label>
+                    <input type="email" x-model="email" required class="w-full border border-brand-dark/20 rounded-lg px-4 py-2 focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition-all bg-transparent">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-widest text-brand-dark/70 mb-1">Senha</label>
+                    <input type="password" x-model="password" required class="w-full border border-brand-dark/20 rounded-lg px-4 py-2 focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition-all bg-transparent">
+                </div>
+                <button type="submit" class="w-full bg-brand-green hover:bg-brand-dark text-white font-bold py-3 rounded-lg uppercase tracking-[0.15em] text-xs transition-all shadow-md mt-4">
+                    Entrar
+                </button>
+            </form>
+        </div>
+
+        <!-- Dashboard do Administrador -->
+        <div x-show="user" style="display: none;">
+            
+            <!-- Listagem de Produtos -->
+            <div x-show="view === 'list'" x-transition>
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="font-serif text-3xl text-brand-dark">Produtos Cadastrados</h2>
+                    <button @click="openForm()" class="bg-brand-green hover:bg-brand-dark text-white px-6 py-2 rounded-full uppercase tracking-widest text-xs font-bold transition-all shadow-sm flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Novo Produto
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-brand-dark/5 overflow-hidden">
+                    <template x-if="products.length === 0">
+                        <div class="p-10 text-center text-brand-dark/50">Nenhum produto cadastrado ainda.</div>
+                    </template>
+                    
+                    <ul class="divide-y divide-brand-dark/10">
+                        <template x-for="product in products" :key="product.id">
+                            <li class="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between hover:bg-brand-bg/30 transition-colors">
+                                <div class="flex items-center space-x-6 w-full sm:w-auto mb-4 sm:mb-0">
+                                    <img :src="product.image || 'hero.jpg'" class="w-16 h-16 object-cover rounded-lg border border-brand-dark/10 bg-brand-bg">
+                                    <div>
+                                        <span class="text-[0.6rem] text-brand-lavender font-bold uppercase tracking-[0.2em] block mb-1" x-text="product.category"></span>
+                                        <h3 class="font-serif text-xl text-brand-dark" x-text="product.name"></h3>
+                                        <p class="text-sm font-bold text-brand-green" x-text="product.price"></p>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-3 w-full sm:w-auto justify-end">
+                                    <button @click="openForm(product)" class="text-xs uppercase tracking-widest font-bold text-brand-dark/70 hover:text-brand-green transition-colors px-3 py-2 bg-brand-bg rounded-lg">Editar</button>
+                                    <button @click="deleteProduct(product.id)" class="text-xs uppercase tracking-widest font-bold text-red-500 hover:text-red-700 transition-colors px-3 py-2 bg-red-50 rounded-lg">Excluir</button>
+                                </div>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Formulário de Produto (Criar / Editar) -->
+            <div x-show="view === 'form'" x-transition style="display: none;">
+                <button @click="view = 'list'" class="text-brand-dark/60 hover:text-brand-dark flex items-center text-sm font-bold uppercase tracking-widest mb-6">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Voltar para lista
+                </button>
+
+                <div class="bg-white rounded-2xl shadow-lg border border-brand-dark/5 p-6 md:p-8">
+                    <h2 class="font-serif text-3xl text-brand-dark mb-8" x-text="form.id ? 'Editar Produto' : 'Cadastrar Novo Produto'"></h2>
+
+                    <form @submit.prevent="saveProduct" class="space-y-6">
+                        
+                        <!-- File Upload -->
+                        <div class="p-6 border-2 border-dashed border-brand-dark/20 rounded-xl bg-brand-bg/50 text-center">
+                            <label class="block text-sm font-bold text-brand-dark mb-4 uppercase tracking-widest">Foto do Produto</label>
+                            
+                            <template x-if="form.image && !imageFile">
+                                <div class="mb-4">
+                                    <img :src="form.image" class="h-32 object-contain mx-auto rounded-lg shadow-sm">
+                                    <p class="text-xs text-brand-dark/50 mt-2">Imagem atual salva no Firebase</p>
+                                </div>
+                            </template>
+
+                            <input type="file" accept="image/*" @change="handleImageSelect" class="block w-full text-sm text-brand-dark/70 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:uppercase file:tracking-widest file:bg-brand-green file:text-white hover:file:bg-brand-dark transition-all mx-auto cursor-pointer">
+                            <p class="text-xs text-brand-dark/40 mt-3">Recomendado: Fundo branco ou transparente (PNG/JPG).</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs uppercase tracking-widest text-brand-dark/70 mb-1">Nome do Produto *</label>
+                                <input type="text" x-model="form.name" required class="w-full border border-brand-dark/20 rounded-lg px-4 py-2 focus:outline-none focus:border-brand-green bg-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-widest text-brand-dark/70 mb-1">Categoria *</label>
+                                <input type="text" x-model="form.category" required placeholder="ex: Tratamento Facial" class="w-full border border-brand-dark/20 rounded-lg px-4 py-2 focus:outline-none focus:border-brand-green bg-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-widest text-brand-dark/70 mb-1">Preço *</label>
+                                <input type="text" x-model="form.price" required placeholder="ex: R$ 89,90" class="w-full border border-brand-dark/20 rounded-lg px-4 py-2 focus:outline-none focus:border-brand-green bg-transparent">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs uppercase tracking-widest text-brand-dark/70 mb-1">Descrição Curta *</label>
+                            <textarea x-model="form.description" required rows="2" class="w-full border border-brand-dark/20 rounded-lg px-4 py-2 focus:outline-none focus:border-brand-green bg-transparent"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs uppercase tracking-widest text-brand-dark/70 mb-1">Fórmula (Ingredientes) *</label>
+                            <textarea x-model="form.ingredients" required rows="3" placeholder="Separe por vírgula..." class="w-full border border-brand-dark/20 rounded-lg px-4 py-2 focus:outline-none focus:border-brand-green bg-transparent"></textarea>
+                        </div>
+
+                        <!-- Benefícios -->
+                        <div class="border-t border-brand-dark/10 pt-6 mt-6">
+                            <h3 class="font-serif text-xl text-brand-lavender mb-4">Benefícios (Tópicos)</h3>
+                            
+                            <!-- Lista atual de benefícios -->
+                            <ul class="space-y-3 mb-6">
+                                <template x-for="(benefit, index) in form.benefits" :key="index">
+                                    <li class="flex items-start justify-between bg-brand-bg/50 p-4 rounded-lg border border-brand-dark/5">
+                                        <div>
+                                            <strong class="text-sm text-brand-lavender uppercase tracking-wide block" x-text="benefit.title"></strong>
+                                            <span class="text-sm text-brand-dark/80" x-text="benefit.desc"></span>
+                                        </div>
+                                        <button type="button" @click="removeBenefit(index)" class="text-red-500 hover:text-red-700 p-2">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    </li>
+                                </template>
+                                <template x-if="form.benefits.length === 0">
+                                    <p class="text-sm text-brand-dark/50 italic">Nenhum benefício adicionado ainda.</p>
+                                </template>
+                            </ul>
+
+                            <!-- Adicionar novo benefício -->
+                            <div class="bg-brand-pink/20 p-4 rounded-xl border border-brand-pink border-dashed">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                                    <div>
+                                        <label class="block text-xs uppercase tracking-widest text-brand-dark/70 mb-1">Título do Benefício</label>
+                                        <input type="text" x-model="newBenefit.title" placeholder="Ex: Nutre Profundamente" class="w-full border border-white rounded-lg px-3 py-2 bg-white/50 focus:bg-white focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs uppercase tracking-widest text-brand-dark/70 mb-1">Descrição</label>
+                                        <input type="text" x-model="newBenefit.desc" placeholder="Ex: Rico em vitaminas..." class="w-full border border-white rounded-lg px-3 py-2 bg-white/50 focus:bg-white focus:outline-none">
+                                    </div>
+                                </div>
+                                <button type="button" @click="addBenefit" class="bg-brand-lavender text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg hover:bg-brand-dark transition-colors">
+                                    + Adicionar à Lista
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="pt-8 border-t border-brand-dark/10 flex justify-end">
+                            <button type="submit" class="bg-brand-green hover:bg-brand-dark text-white font-bold py-4 px-10 rounded-xl uppercase tracking-[0.15em] text-sm transition-all shadow-lg flex items-center">
+                                <span x-show="uploadingImage" class="flex items-center">
+                                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    Fazendo Upload...
+                                </span>
+                                <span x-show="!uploadingImage">Salvar Produto no Banco</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('adminApp', () => ({
+                user: null,
+                email: '',
+                password: '',
+                authError: '',
+                view: 'list', // 'list' ou 'form'
+                products: [],
+                loading: true,
+
+                // Estado do form
+                form: {
+                    id: null,
+                    name: '',
+                    category: '',
+                    price: '',
+                    description: '',
+                    ingredients: '',
+                    image: '',
+                    benefits: []
+                },
+                newBenefit: { title: '', desc: '' },
+                uploadingImage: false,
+                imageFile: null,
+
+                init() {
+                    try {
+                        const firebaseConfig = {
+                            apiKey: "AIzaSyDnrUz6kpjKD9HX6QLId0iIyZJiqL8iGcE",
+                            authDomain: "artnovsky-2c6d9.firebaseapp.com",
+                            projectId: "artnovsky-2c6d9",
+                            storageBucket: "artnovsky-2c6d9.firebasestorage.app",
+                            messagingSenderId: "447937696787",
+                            appId: "1:447937696787:web:8f93b408f25b67b6541be6"
+                        };
+
+                        if (!firebase.apps.length) {
+                            firebase.initializeApp(firebaseConfig);
+                        }
+
+                        this.db = firebase.firestore();
+                        this.auth = firebase.auth();
+                        this.storage = firebase.storage();
+
+                        // Listener de Autenticação
+                        this.auth.onAuthStateChanged((user) => {
+                            this.loading = false;
+                            this.user = user;
+                            if (user) {
+                                this.fetchProducts();
+                            }
+                        });
+                        
+                        // Failsafe: se a internet/navegador bloquear o Firebase, destrava a tela após 4 segundos
+                        setTimeout(() => {
+                            if(this.loading) this.loading = false;
+                        }, 4000);
+                    } catch(e) {
+                        console.error(e);
+                        this.loading = false;
+                        alert("Erro ao carregar os sistemas. Verifique se você está abrindo o arquivo em um navegador completo como o Chrome.");
+                    }
+                },
+
+                async login() {
+                    this.loading = true;
+                    this.authError = '';
+                    try {
+                        await this.auth.signInWithEmailAndPassword(this.email, this.password);
+                    } catch(e) {
+                        console.error(e);
+                        this.authError = 'Email ou senha incorretos. Verifique se você criou o usuário na aba Authentication do Firebase.';
+                        this.loading = false;
+                    }
+                },
+                
+                async logout() {
+                    await this.auth.signOut();
+                    this.email = '';
+                    this.password = '';
+                },
+
+                async fetchProducts() {
+                    this.loading = true;
+                    try {
+                        const snap = await this.db.collection('catalogo').get();
+                        this.products = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    } catch(e) {
+                        console.error("Erro ao buscar", e);
+                    }
+                    this.loading = false;
+                },
+
+                openForm(product = null) {
+                    if (product) {
+                        // Faz uma cópia profunda pra não alterar a lista antes de salvar
+                        this.form = JSON.parse(JSON.stringify(product));
+                        if (!this.form.benefits) this.form.benefits = [];
+                    } else {
+                        // Novo produto limpo
+                        this.form = { id: null, name: '', category: '', price: '', description: '', ingredients: '', image: '', benefits: [] };
+                    }
+                    this.imageFile = null;
+                    this.view = 'form';
+                },
+
+                addBenefit() {
+                    if (this.newBenefit.title && this.newBenefit.desc) {
+                        this.form.benefits.push({ ...this.newBenefit });
+                        this.newBenefit = { title: '', desc: '' };
+                    }
+                },
+                
+                removeBenefit(index) {
+                    this.form.benefits.splice(index, 1);
+                },
+
+                handleImageSelect(event) {
+                    if (event.target.files.length > 0) {
+                        this.imageFile = event.target.files[0];
+                    }
+                },
+
+                async saveProduct() {
+                    this.loading = true;
+                    try {
+                        // 1. Upload da imagem se houver nova
+                        if (this.imageFile) {
+                            this.uploadingImage = true;
+                            const storageRef = this.storage.ref();
+                            const imgRef = storageRef.child(`catalogo/${Date.now()}_${this.imageFile.name}`);
+                            await imgRef.put(this.imageFile);
+                            this.form.image = await imgRef.getDownloadURL();
+                            this.uploadingImage = false;
+                        }
+
+                        // 2. Monta o objeto pra salvar
+                        const productData = {
+                            name: this.form.name,
+                            category: this.form.category,
+                            price: this.form.price,
+                            description: this.form.description,
+                            ingredients: this.form.ingredients,
+                            image: this.form.image,
+                            benefits: this.form.benefits
+                        };
+
+                        // 3. Salva no Firestore
+                        if (this.form.id) {
+                            await this.db.collection('catalogo').doc(this.form.id).update(productData);
+                        } else {
+                            await this.db.collection('catalogo').add(productData);
+                        }
+
+                        // 4. Volta pra lista atualizada
+                        await this.fetchProducts();
+                        this.view = 'list';
+                    } catch(e) {
+                        console.error(e);
+                        alert("Erro ao salvar produto. Verifique as permissões do Firebase (Regras de Segurança).");
+                        this.uploadingImage = false;
+                    }
+                    this.loading = false;
+                },
+
+                async deleteProduct(id) {
+                    if (confirm("ATENÇÃO: Tem certeza que deseja excluir este produto do catálogo?")) {
+                        this.loading = true;
+                        try {
+                            await this.db.collection('catalogo').doc(id).delete();
+                            await this.fetchProducts();
+                        } catch(e) {
+                            console.error(e);
+                            alert("Erro ao excluir.");
+                        }
+                        this.loading = false;
+                    }
+                }
+            }))
+        })
+    </script>
+</body>
+</html>
