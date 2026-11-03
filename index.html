@@ -40,6 +40,18 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <!-- Vercel Web Analytics -->
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+
+    <!-- Vercel Speed Insights -->
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+
     <style>
         .hero-overlay {
             background: linear-gradient(to right, rgba(244, 239, 230, 0.95) 0%, rgba(244, 239, 230, 0.4) 100%);
@@ -374,7 +386,7 @@
                     <h4 class="font-serif text-lg mb-4 text-brand-dark border-b border-brand-dark/10 pb-2">Contato Rápido</h4>
                     <ul class="space-y-3 text-brand-dark/80 text-sm">
                         <li>Fale conosco pelo WhatsApp:</li>
-                        <li><a href="https://wa.me/5548999462200" target="_blank" class="text-brand-green font-bold hover:text-brand-dark transition-colors">(48) 99946-2200</a></li>
+                        <li><a href="https://wa.me/5548999462200" @click="trackWhatsAppDirect('rodape')" target="_blank" class="text-brand-green font-bold hover:text-brand-dark transition-colors">(48) 99946-2200</a></li>
                         <li>contato@artnovsky.com.br</li>
                         <li>Florianópolis, SC</li>
                     </ul>
@@ -389,7 +401,7 @@
     </footer>
 
     <!-- Fixed WhatsApp Button -->
-    <a href="https://wa.me/5548999462200" target="_blank" 
+    <a href="https://wa.me/5548999462200" @click="trackWhatsAppDirect('botao_flutuante')" target="_blank" 
        class="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 hover:shadow-[#25D366]/50 transition-all z-40 group flex items-center justify-center">
         <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.618-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.418-.097.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964 1.038-3.562c-.687-1.063-1.05-2.303-1.05-3.589 0-3.693 3.003-6.697 6.697-6.697 3.694 0 6.696 3.004 6.696 6.697 0 3.694-3.002 6.696-6.696 6.696z"/></svg>
     </a>
@@ -629,12 +641,34 @@
                             quantity: qty
                         });
                     }
+
+                    // Vercel Custom Event: Adicionar ao Carrinho
+                    if (window.va && this.activeProduct) {
+                        window.va('event', {
+                            name: 'adicionar_ao_carrinho',
+                            data: {
+                                produto: this.activeProduct.name || '',
+                                preco: this.activeProduct.price || '',
+                                quantidade: qty
+                            }
+                        });
+                    }
+
                     this.closeModal();
-                    // Opcional: abrir o modal do carrinho automaticamente após adicionar
-                    // this.cartModalOpen = true;
                 },
 
                 removeFromCart(index) {
+                    const removedItem = this.cart[index];
+                    if (window.va && removedItem && removedItem.product) {
+                        window.va('event', {
+                            name: 'remover_do_carrinho',
+                            data: {
+                                produto: removedItem.product.name || '',
+                                quantidade: removedItem.quantity || 1
+                            }
+                        });
+                    }
+
                     this.cart.splice(index, 1);
                     if (this.cart.length === 0) {
                         this.cartModalOpen = false;
@@ -660,6 +694,24 @@
                 },
 
                 sendOrderToWhatsApp() {
+                    const totalNum = this.cart.reduce((sum, item) => {
+                        return sum + (this.parsePrice(item.product.price) * item.quantity);
+                    }, 0);
+                    const totalItems = this.cartTotalItems();
+                    const summary = this.cart.map(i => `${i.quantity}x ${i.product.name}`).join(', ');
+
+                    // Vercel Custom Event: Pedido Enviado para o WhatsApp (Métrica Principal de Ganho / Lead)
+                    if (window.va) {
+                        window.va('event', {
+                            name: 'pedido_whatsapp',
+                            data: {
+                                valor_total: totalNum,
+                                quantidade_itens: totalItems,
+                                produtos: summary
+                            }
+                        });
+                    }
+
                     let msg = "Olá! Gostaria de fazer um pedido pelo site:%0A%0A";
                     this.cart.forEach(item => {
                         msg += `- ${item.quantity}x ${item.product.name} (${item.product.price})%0A`;
@@ -668,6 +720,16 @@
                     msg += "Como podemos seguir com o pagamento e entrega?";
                     
                     window.open(`https://wa.me/5548999462200?text=${msg}`, '_blank');
+                },
+
+                // Tracking de Contato Direto via WhatsApp
+                trackWhatsAppDirect(origem) {
+                    if (window.va) {
+                        window.va('event', {
+                            name: 'contato_whatsapp',
+                            data: { origem: origem }
+                        });
+                    }
                 }
             }))
         })
